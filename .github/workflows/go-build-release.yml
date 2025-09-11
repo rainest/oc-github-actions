@@ -176,17 +176,18 @@ jobs:
       # Credit to the https://github.com/goreleaser/goreleaser/issues/2828#issuecomment-1311662146 workaround
       # for nightly/snapshot builds being locked behind the paid version of goreleaser.
       - name: List snapshot images
-        if: {{ inputs.devel }}
+        # types are hard vov https://github.com/actions/runner/issues/2238
+        if: {{ inputs.devel == 'true' }}
         run: |
           docker image ls --format "{{.Repository}}:{{.Tag}}" | \
             grep -e "$GITHUB_REPOSITORY:.*$(git rev-parse --short HEAD).*" | \
             paste -sd ' ' /dev/stdin > images
       - name: Push snapshot images
-        if: {{ inputs.devel }}
+        if: {{ inputs.devel == 'true' }}
         run: |
           cat images | xargs -d ' ' -I{} -n1 sh -c "docker push {}"
       - name: Create and push manifest for :snapshot tag
-        if: {{ inputs.devel }}
+        if: {{ inputs.devel == 'true' }}
         run: |
           docker manifest create $GITHUB_REPOSITORY:snapshot $(cat images)
           docker manifest push $GITHUB_REPOSITORY:snapshot
