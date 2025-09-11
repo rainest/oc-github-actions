@@ -177,17 +177,17 @@ jobs:
       # for nightly/snapshot builds being locked behind the paid version of goreleaser.
       - name: List snapshot images
         # types are hard vov https://github.com/actions/runner/issues/2238
-        if: ${{ inputs.devel == 'true' }}
+        if: true
         run: |
           docker image ls --format "{{.Repository}}:{{.Tag}}" | \
             grep -e "$GITHUB_REPOSITORY:.*$(git rev-parse --short HEAD).*" | \
             paste -sd ' ' /dev/stdin > images
       - name: Push snapshot images
-        if: ${{ inputs.devel == 'true' }}
+        if: true
         run: |
           cat images | xargs -d ' ' -I{} -n1 sh -c "docker push {}"
       - name: Create and push manifest for :snapshot tag
-        if: ${{ inputs.devel == 'true' }}
+        if: true
         run: |
           docker manifest create $GITHUB_REPOSITORY:snapshot $(cat images)
           docker manifest push $GITHUB_REPOSITORY:snapshot
