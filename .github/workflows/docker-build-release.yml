@@ -184,3 +184,4 @@ jobs:
         # if we want to trigger tagging from the workflow, "tag" and "commit"
         # need to be set to create a new one
         prerelease: ${{ steps.semver_parser.outputs.prerelease != '' }}
+        skipIfReleaseExists: true
