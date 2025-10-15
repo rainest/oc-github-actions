@@ -39,6 +39,14 @@ on:
         required: false
         type: string
         default: 'main'
+      cc:
+        description: 'Overide "go build" CC envvar'
+        type: string
+        default: ''
+      platforms:
+        description: 'Overide platforms'
+        type: string
+        default: 'linux/amd64, linux/arm64'
 
 permissions: write-all # Necessary for the generate-build-provenance action with containers
 
@@ -69,6 +77,10 @@ jobs:
       - name: Set CGO_ENABLED if specified
         if: ${{ inputs.cgo-enabled != '' }}
         run: echo "CGO_ENABLED=${{ inputs.cgo-enabled }}" >> $GITHUB_ENV
+
+      - name: Set CC if specified
+        if: ${{ inputs.cgo-enabled != '' }}
+        run: echo "CC=${{ inputs.cc }}" >> $GITHUB_ENV
 
       - name: Set additional environment variables
         if: ${{ inputs.additional-env-vars != '' }}
@@ -128,6 +140,8 @@ jobs:
         uses: docker/build-push-action@v6.18.0
         with:
           push: true
+          # TODO to work around the PCS bug, we can make this an argument, though it's annoying, and may cause weirdness
+          # alternately, single dockerfile, with an action arg to populate https://docs.docker.com/reference/cli/docker/buildx/build/#build-arg that sets the compiler chain?
           file: Dockerfile.build
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
@@ -139,7 +153,9 @@ jobs:
           provenance: mode=max
           sbom: true
           target: ${{ inputs.docker-target }}
-          platforms: linux/amd64, linux/arm64
+          # TODO to work around the PCS bug, we can make this an argument, though it's annoying, and may cause weirdness
+          #platforms: linux/amd64, linux/arm64
+          platforms: ${{ inputs.platforms }}
           build-args: |
             TAG=${{ steps.meta.outputs.version }}
             COMMIT=${{ github.sha }}
@@ -147,6 +163,7 @@ jobs:
             GOPATH=${{ env.GOPATH}}
             GOCACHE=${{ env.GOCACHE}}
             CGO_ENABLED=${{ env.CGO_ENABLED }}
+            CC=${{ env.CC }}
 
   publish-release:
     runs-on: ubuntu-latest
