@@ -134,6 +134,13 @@ jobs:
             GOCACHE=${{ env.GOCACHE}}
             CGO_ENABLED=${{ env.CGO_ENABLED }}
             CC=${{ env.CC }}
+      - name: Attest
+        uses: actions/attest-build-provenance@v3
+        id: attest
+        with:
+          subject-name: ${{ inputs.registry-name }}
+          subject-digest: ${{ steps.docker_build.outputs.digest }}
+          push-to-registry: true
 
   publish-release:
     runs-on: ubuntu-latest
